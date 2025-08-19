@@ -224,10 +224,10 @@
                     <div class="dropdown-menu">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="">
+                                <a class="dropdown-item" href="{{route('pasienKontrol.index')}}">
                                     Notifikasi Kontrol
                                 </a>
-                                <a class="dropdown-item" href="">
+                                <a class="dropdown-item" href="{{ route('batalKontrol') }}">
                                     Notifikasi Perubahan / Batal Kontrol
                                 </a>
                             </div>
