@@ -9,7 +9,7 @@
                     Administrator
                 </div>
                 <h2 class="page-title">
-                    Daftar Pasien Kontrol
+                    Menu Notifikasi Jadwal Kontrol Pasien
                 </h2>
             </div>
             <!-- Page title actions -->
