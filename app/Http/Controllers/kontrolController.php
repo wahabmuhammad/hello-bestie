@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\kirimPesanFonnte;
+use App\Jobs\notifikasiBatalPraktik;
 use App\Jobs\prosesNotifikasiPasienKontrol;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -16,18 +17,42 @@ class kontrolController extends Controller
         $search = $request->input('search');
         $tglAwal = $request->input('tglAwal');
         $tglAkhir = $request->input('tglAkhir');
+        $idRuangan = $request->input('idruangan');
+        $idDokter = $request->input('iddokter');
+        // dd($idDokter);
 
-        // Query data kontrol
         $query = DB::table('emrpasiend_t')
             ->leftJoin('emrpasien_t', 'emrpasien_t.noemr', '=', 'emrpasiend_t.emrpasienfk')
             ->leftJoin('pasien_m', 'pasien_m.nocm', '=', 'emrpasien_t.nocm')
             ->leftJoin('pegawai_m', 'pegawai_m.id', '=', 'emrpasien_t.pegawaifk')
+            ->leftJoin('emrpasiend_t as ed', function ($join) {
+                $join->on('ed.emrpasienfk', '=', 'emrpasiend_t.emrpasienfk')
+                    ->where('ed.emrdfk', '=', 43000006); // dokter
+            })
             ->where('emrpasiend_t.emrfk', '=', '210047')
             ->where('emrpasiend_t.emrdfk', '=', '43000003') // tgl kontrol
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('pasien_m.namapasien', 'ilike', '%' . $search . '%')
                         ->orWhere('pasien_m.nocm', 'ilike', '%' . $search . '%');
+                });
+            })
+            ->when($idRuangan, function ($query) use ($idRuangan) {
+                $query->whereExists(function ($sub) use ($idRuangan) {
+                    $sub->select(DB::raw(1))
+                        ->from('emrpasiend_t as er')
+                        ->whereColumn('er.emrpasienfk', 'emrpasiend_t.emrpasienfk')
+                        ->where('er.emrdfk', 43000002) // ruangan
+                        ->where(DB::raw("split_part(er.value, '~', 1)"), '=', $idRuangan);
+                });
+            })
+            ->when($idDokter, function ($query) use ($idDokter) {
+                $query->whereExists(function ($sub) use ($idDokter) {
+                    $sub->select(DB::raw(1))
+                        ->from('emrpasiend_t as ed2')
+                        ->whereColumn('ed2.emrpasienfk', 'emrpasiend_t.emrpasienfk')
+                        ->where('ed2.emrdfk', 43000006) // dokter
+                        ->where(DB::raw("split_part(ed2.value, '~', 1)"), '=', $idDokter);
                 });
             })
             ->when($tglAwal && $tglAkhir, function ($query) use ($tglAwal, $tglAkhir) {
@@ -46,58 +71,27 @@ class kontrolController extends Controller
             })
             ->select(
                 'pegawai_m.namalengkap as namapegawai',
+                'emrpasien_t.namaruangan',
                 'emrpasien_t.noemr',
                 'emrpasiend_t.value as tglkontrol',
                 'pasien_m.nocm',
                 'pasien_m.namapasien',
                 'pasien_m.nohp',
-                'pasien_m.tgllahir'
+                'pasien_m.tgllahir',
+                DB::raw("COALESCE(split_part(ed.value, '~', 2), '-') as namadokter")
             )
             ->orderBy('emrpasiend_t.value', 'asc')
             ->paginate(10);
 
-        // Query data dokter
-        $queryDokter = DB::table('emrpasiend_t')
-            ->leftJoin('emrpasien_t', 'emrpasien_t.noemr', '=', 'emrpasiend_t.emrpasienfk')
-            ->where('emrpasiend_t.emrfk', '=', '210047')
-            ->where('emrpasiend_t.emrdfk', '=', '43000006')
-            ->select(
-                'emrpasien_t.noemr',
-                DB::raw("split_part(emrpasiend_t.value, '~', 2) as namadokter")
-            )
-            ->get();
-
-        // Query data ruangan
-        $queryRuangan = DB::table('emrpasiend_t')
-            ->leftJoin('emrpasien_t', 'emrpasien_t.noemr', '=', 'emrpasiend_t.emrpasienfk')
-            ->where('emrpasiend_t.emrfk', '=', '210047')
-            ->where('emrpasiend_t.emrdfk', '=', '43000002') // ruangan
-            ->select(
-                'emrpasien_t.noemr',
-                DB::raw("split_part(emrpasiend_t.value, '~', 2) as namaruangan")
-            )
-            ->get();
-
-        // Buat mapping dokter & ruangan berdasarkan noemr
-        $dokterMap = collect($queryDokter)->keyBy('noemr');
-        $ruanganMap = collect($queryRuangan)->keyBy('noemr');
-
-        // Gabungkan ke data kontrol
-        $kontrolItems = $query->items();
-        $datas = collect($kontrolItems)->map(function ($item) use ($dokterMap, $ruanganMap) {
-            $item->namadokter = $dokterMap[$item->noemr]->namadokter ?? '-';
-            $item->namaruangan = $ruanganMap[$item->noemr]->namaruangan ?? '-';
-            return $item;
-        });
 
         if ($request->ajax()) {
             return response()->json([
-                'datas' => $datas,
+                'datas' => $query->items(),
                 'pagination' => (string) $query->links()
             ]);
         }
 
-        return view('admin.daftarkontrol', compact('datas'));
+        return view('admin.daftarkontrol');
     }
 
     public function getDataPasienKontrol(Request $request)
@@ -218,18 +212,42 @@ class kontrolController extends Controller
         $search = $request->input('search');
         $tglAwal = $request->input('tglAwal');
         $tglAkhir = $request->input('tglAkhir');
+        $idRuangan = $request->input('idruangan');
+        $idDokter = $request->input('iddokter');
+        // dd($idDokter);
 
-        // Query data kontrol
         $query = DB::table('emrpasiend_t')
             ->leftJoin('emrpasien_t', 'emrpasien_t.noemr', '=', 'emrpasiend_t.emrpasienfk')
             ->leftJoin('pasien_m', 'pasien_m.nocm', '=', 'emrpasien_t.nocm')
             ->leftJoin('pegawai_m', 'pegawai_m.id', '=', 'emrpasien_t.pegawaifk')
+            ->leftJoin('emrpasiend_t as ed', function ($join) {
+                $join->on('ed.emrpasienfk', '=', 'emrpasiend_t.emrpasienfk')
+                    ->where('ed.emrdfk', '=', 43000006); // dokter
+            })
             ->where('emrpasiend_t.emrfk', '=', '210047')
-            ->where('emrpasiend_t.emrdfk', '=', '43000003')
+            ->where('emrpasiend_t.emrdfk', '=', '43000003') // tgl kontrol
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('pasien_m.namapasien', 'ilike', '%' . $search . '%')
                         ->orWhere('pasien_m.nocm', 'ilike', '%' . $search . '%');
+                });
+            })
+            ->when($idRuangan, function ($query) use ($idRuangan) {
+                $query->whereExists(function ($sub) use ($idRuangan) {
+                    $sub->select(DB::raw(1))
+                        ->from('emrpasiend_t as er')
+                        ->whereColumn('er.emrpasienfk', 'emrpasiend_t.emrpasienfk')
+                        ->where('er.emrdfk', 43000002) // ruangan
+                        ->where(DB::raw("split_part(er.value, '~', 1)"), '=', $idRuangan);
+                });
+            })
+            ->when($idDokter, function ($query) use ($idDokter) {
+                $query->whereExists(function ($sub) use ($idDokter) {
+                    $sub->select(DB::raw(1))
+                        ->from('emrpasiend_t as ed2')
+                        ->whereColumn('ed2.emrpasienfk', 'emrpasiend_t.emrpasienfk')
+                        ->where('ed2.emrdfk', 43000006) // dokter
+                        ->where(DB::raw("split_part(ed2.value, '~', 1)"), '=', $idDokter);
                 });
             })
             ->when($tglAwal && $tglAkhir, function ($query) use ($tglAwal, $tglAkhir) {
@@ -254,47 +272,84 @@ class kontrolController extends Controller
                 'pasien_m.nocm',
                 'pasien_m.namapasien',
                 'pasien_m.nohp',
-                'pasien_m.tgllahir'
+                'pasien_m.tgllahir',
+                DB::raw("COALESCE(split_part(ed.value, '~', 2), '-') as namadokter")
             )
             ->orderBy('emrpasiend_t.value', 'asc')
             ->paginate(10);
 
-        // Query data dokter
-        $queryDokter = DB::table('emrpasiend_t')
-            ->leftJoin('emrpasien_t', 'emrpasien_t.noemr', '=', 'emrpasiend_t.emrpasienfk')
-            ->leftJoin('pasien_m', 'pasien_m.nocm', '=', 'emrpasien_t.nocm')
-            ->leftJoin('pegawai_m', 'pegawai_m.id', '=', 'emrpasien_t.pegawaifk')
-            ->where('emrpasiend_t.emrfk', '=', '210047')
-            ->where('emrpasiend_t.emrdfk', '=', '43000006')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('pasien_m.namapasien', 'ilike', '%' . $search . '%')
-                        ->orWhere('pasien_m.nocm', 'ilike', '%' . $search . '%');
-                });
-            })
-            ->select(
-                'emrpasien_t.noemr',
-                DB::raw("split_part(emrpasiend_t.value, '~', 2) as namadokter")
-            )
-            ->orderBy('emrpasiend_t.value', 'asc')
-            ->get();
-
-        // Gabungkan data dokter ke data kontrol
-        $kontrolItems = $query->items();
-        $dokterMap = collect($queryDokter)->keyBy('noemr');
-
-        $datas = collect($kontrolItems)->map(function ($item) use ($dokterMap) {
-            $item->namadokter = $dokterMap[$item->noemr]->namadokter ?? '-';
-            return $item;
-        });
 
         if ($request->ajax()) {
             return response()->json([
-                'datas' => $datas,
+                'datas' => $query->items(),
                 'pagination' => (string) $query->links()
             ]);
         }
 
-        return view('admin.batalKontrol', compact('datas'));
+        return view('admin.batalKontrol');
+    }
+
+    public  function getRuangan(Request $request)
+    {
+        $search = $request->input('query');
+        $query = DB::table('ruangan_m')
+            ->where('ruangan_m.statusenabled', '=', 'true')
+            ->whereIn('ruangan_m.objectdepartemenfk', [18, 16]) // Ruangan
+            ->select(
+                'ruangan_m.id',
+                'ruangan_m.namaruangan'
+            )
+            ->when($search, function ($query, $search) {
+                $query->where('namaruangan', 'ilike', '%' . $search . '%');
+            })
+            ->get();
+        // dd($query);
+
+        return response()->json([
+            'datas' => $query,
+            'status' => 'success',
+            'code' => 200,
+        ]);
+    }
+
+    public function getDokter(Request $request)
+    {
+        $search = $request->input('query');
+        $query = DB::table('pegawai_m')
+            ->where('pegawai_m.statusenabled', '=', 'true')
+            ->where('pegawai_m.objectjenispegawaifk', '=', 1) // Ruangan
+            ->select(
+                'pegawai_m.id',
+                'pegawai_m.namalengkap as namadokter'
+            )
+            ->when($search, function ($query, $search) {
+                $query->where('namalengkap', 'ilike', '%' . $search . '%');
+            })
+            ->get();
+        // dd($query);
+
+        return response()->json([
+            'datas' => $query,
+            'status' => 'success',
+            'code' => 200,
+        ]);
+    }
+
+    public function notifikasiBatalPraktik(Request $request)
+    {
+        dd($request->all());
+        $tglAwal = $request->input('tglAwal');
+        $tglAkhir = $request->input('tglAkhir');
+        $idRuangan = $request->input('idruangan');
+        $idDokter = $request->input('iddokter');
+        $search = $request->input('search');
+
+        dispatch(new notifikasiBatalPraktik($tglAwal, $tglAkhir, $idRuangan, $idDokter,$search)); // Test kirim pesan
+
+        return response()->json([
+            'message' => 'Notifikasi batal praktik berhasil diproses.',
+            'status' => 'success',
+            'code' => 200,
+        ]);
     }
 }
