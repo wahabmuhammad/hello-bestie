@@ -20,3 +20,7 @@ Route::get('/kontrol/search', [kontrolController::class, 'searchData'])->name('s
 Route::get('/get-data-pasien-kontrol', [kontrolController::class,'getDataPasienKontrol'])->name('getDataPasienKontrol');
 Route::post('kontrol/send-notification', [kontrolController::class, 'kirimNotifikasi'])->name('kirimNotifikasi');
 Route::get('/kontrol/batal-kontrol', [kontrolController::class, 'batalKontrol'])->name('batalKontrol');
+Route::get('/kontrol/get-ruangan', [kontrolController::class, 'getRuangan'])->name('getRuangan');
+Route::get('/kontrol/get-dokter', [kontrolController::class, 'getDokter'])->name('getDokter');
+
+Route::post('/kontrol/send-notification/batal-kontrol', [kontrolController::class, 'notifikasiBatalPraktik'])->name('notifikasiBatalPraktik');
