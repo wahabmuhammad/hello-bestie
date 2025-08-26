@@ -125,6 +125,24 @@
                         <input type="date" id="tglAkhir" class="form-control" name="tglregistrasi">
                     </div>
                     <div class="ms-md-2 text-secondary">
+                        <a>Ruangan</a>
+                        <input type="text" id="ruangan" class="form-control" name="ruangan"
+                            placeholder="Cari Ruangan" autocomplete="off">
+                        <input type="hidden" id="idruangan" class="form-control" name="idruangan"
+                            placeholder="Cari Ruangan" autocomplete="off">
+                        <ul id="ruanganList" class="list-group"
+                            style="display: none; z-index: 1000; max-height:200px; overflow-y:auto; width:100%;"></ul>
+                    </div>
+                    <div class="ms-md-2 text-secondary">
+                        <a>Dokter</a>
+                        <input type="text" id="dokter" class="form-control" name="dokter" placeholder="Cari Dokter"
+                            autocomplete="off">
+                        <input type="hidden" id="iddokter" class="form-control" name="iddokter"
+                            placeholder="Cari Dokter" autocomplete="off">
+                        <ul id="dokterList" class="list-group"
+                            style="display: none; z-index: 1000; max-height:200px; overflow-y:auto; width:100%;"></ul>
+                    </div>
+                    <div class="ms-md-2 text-secondary">
                         <a>Cari</a>
                         <div class="input-group">
                             <input type="search" id="searchInput" class="form-control" placeholder="Search…"
@@ -163,6 +181,17 @@
 
                 </div>
                 <div class="card-footer">
+                    {{-- Loader --}}
+                    <div id="loader" class="container container-slim py-4"
+                        style="display: none; text-align:center; padding:20px;">
+                        <div class="text-center">
+                            <div class="text-secondary mb-3">Loading Data</div>
+                            <div class="progress progress-sm">
+                                <div class="progress-bar progress-bar-indeterminate"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- End Loader --}}
                     <div class="pagination-links" id="pagination-links">
                         {{-- {{ $datas->withQueryString()->links() }} <!-- Menampilkan link pagination --> --}}
                     </div>
@@ -284,6 +313,8 @@
                 const tglAwal = $('#tglAwal').val();
                 const tglAkhir = $('#tglAkhir').val();
                 const search = $('#searchInput').val();
+                const idRuangan = $('#idruangan').val();
+                const idDokter = $('#iddokter').val();
 
                 $.ajax({
                     url: 'kontrol?page=' + page,
@@ -291,9 +322,15 @@
                     data: {
                         tglAwal: tglAwal,
                         tglAkhir: tglAkhir,
-                        search: search
+                        search: search,
+                        idruangan: idRuangan,
+                        iddokter: idDokter
                     },
                     dataType: 'json',
+                    beforeSend: function() {
+                        $('#loader').show(); // tampilkan loader
+                        $('#table-body').html(''); // kosongkan isi tabel biar tidak bingung
+                    },
                     success: function(response) {
                         let rows = '';
                         const startIndex = (page - 1) * 10;
@@ -318,47 +355,12 @@
                     },
                     error: function() {
                         alert('Terjadi kesalahan saat mengambil data.');
+                    },
+                    complete: function() {
+                        $('#loader').hide(); // sembunyikan loader setelah selesai
                     }
                 });
             }
-
-            // Trigger saat klik tombol "Cari"
-            // $('#searchButton').on('click', function() {
-            //     const tglAwal = $('#tglAwal').val();
-            //     const tglAkhir = $('#tglAkhir').val();
-            //     const search = $('#searchInput').val();
-
-            //     $.ajax({
-            //         url: 'kontrol/search',
-            //         type: 'get',
-            //         data: {
-            //             tglAwal: tglAwal,
-            //             tglAkhir: tglAkhir,
-            //             search: search
-            //         },
-            //         dataType: 'json',
-            //         success: function(response) {
-            //             let rows = '';
-            //             $.each(response.datas, function(index, data) {
-            //                 rows += `<tr class="patient-row" data-emrpasien="${data.noemr}">
-        //                         <td>${index + 1}</td>
-        //                         <td>${data.namapasien}</td>
-        //                         <td>${data.nocm}</td>
-        //                         <td>${data.tgllahir}</td>
-        //                         <td>${data.nohp}</td>
-        //                         <td>${data.namaruangan}</td>
-        //                         <td>${data.namadokter}</td>
-        //                         <td>${data.tglkontrol}</td>
-        //                     </tr>`;
-            //             });
-            //             $('#table-body').html(rows);
-            //             $('#pagination-links').html(response.pagination);
-            //         },
-            //         error: function() {
-            //             alert('Terjadi kesalahan saat mengambil data.');
-            //         }
-            //     });
-            // });
 
             let currentTglAwal = $('#tglAwal').val();
             let currentTglAkhir = $('#tglAkhir').val();
@@ -406,6 +408,113 @@
                 });
             });
 
+            // Autocomplete event
+            $('#ruangan').on('keyup', function() {
+                let input = $(this);
+                let query = input.val();
+
+                if (query.length < 1) {
+                    $('#ruanganList').hide();
+                    return;
+                }
+
+                $.ajax({
+                    url: '/kontrol/get-ruangan',
+                    method: 'GET',
+                    data: {
+                        query: query
+                    },
+                    success: function(response) {
+                        console.log(response); // cek isi responsenya
+                        let list = $('#ruanganList');
+                        list.empty();
+
+                        if (response.datas && response.datas.length > 0) {
+                            response.datas.forEach(function(item) {
+                                list.append(
+                                    '<li class="list-group-item ruangan-item" data-id="' +
+                                    item.id + '">' + item.namaruangan + '</li>'
+                                );
+                            });
+                            list.show();
+                        } else {
+                            list.hide();
+                        }
+                    }
+                });
+            });
+
+            // Klik suggestion -> isi input
+            $(document).on('click', '.ruangan-item', function() {
+                let nama = $(this).text();
+                let id = $(this).data('id');
+
+                $('#ruangan').val(nama); // tampilkan nama di input
+                $('#idruangan').val(id); // simpan id di attribute data-id
+                $('#ruanganList').hide();
+            });
+
+            // Klik di luar -> hide list
+            $(document).click(function(e) {
+                if (!$(e.target).closest('#ruangan, #ruanganList').length) {
+                    $('#ruanganList').hide();
+                }
+            });
+
+            // Autocomplete untuk dokter
+            $('#dokter').on('keyup', function() {
+                let input = $(this);
+                let query = input.val();
+
+                if (query.length < 1) {
+                    $('#iddokter').val('');
+
+                    $('#dokterList').hide();
+                    return;
+                }
+
+                $.ajax({
+                    url: '/kontrol/get-dokter',
+                    method: 'GET',
+                    data: {
+                        query: query
+                    },
+                    success: function(response) {
+                        console.log(response); // cek isi responsenya
+                        let list = $('#dokterList');
+                        list.empty();
+
+                        if (response.datas && response.datas.length > 0) {
+                            response.datas.forEach(function(item) {
+                                list.append(
+                                    '<li class="list-group-item dokter-item" data-id="' +
+                                    item.id + '">' + item.namadokter + '</li>'
+                                );
+                            });
+                            list.show();
+                        } else {
+                            list.hide();
+                        }
+                    }
+                });
+            });
+
+            // Klik suggestion -> isi input
+            $(document).on('click', '.dokter-item', function() {
+                let nama = $(this).text();
+                let id = $(this).data('id');
+
+                $('#dokter').val(nama); // tampilkan nama di input
+                $('#iddokter').val(id); // simpan id di attribute data-id
+                $('#dokterList').hide();
+            });
+
+            // Klik di luar -> hide list
+            $(document).click(function(e) {
+                if (!$(e.target).closest('#dokter, #dokterList').length) {
+                    $('#dokterList').hide();
+                }
+            });
         });
     </script>
 @endsection
