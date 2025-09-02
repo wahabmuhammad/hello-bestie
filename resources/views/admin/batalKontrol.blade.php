@@ -137,7 +137,7 @@
 
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-vcenter table-mobile-md card-table">
+                    <table class="table table-vcenter card-table">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -388,54 +388,110 @@
                 let idruangan = $('#idruangan').val(); // kalau butuh ID juga
 
                 $('#modal-formnotifikasi').modal('show');
+                //Tab Batal Kontrol
                 $('#tglkontrolawal-modal').val(currentTglAwal);
                 $('#tglkontrolakhir-modal').val(currentTglAkhir);
                 $('#dokter-modal').val(dokter);
+                $('#iddokter-modal').val(iddokter);
+                $('#idruangan-modal').val(idruangan);
                 $('#ruangan-modal').val(ruangan);
-                console.log(dokter);
-                // console.log(currentTglAwal, currentTglAkhir, idRuangan, iddokter, currentSearch);
+                // Tab Perubahan Jadwal
+                $('#tglkontrolawal-jadwal').val(currentTglAwal);
+                $('#tglkontrolakhir-jadwal').val(currentTglAkhir);
+                $('#dokter-jadwal').val(dokter);
+                $('#iddokter-jadwal').val(iddokter);
+                $('#ruangan-jadwal').val(ruangan);
+                $('#idruangan-jadwal').val(idruangan);
+                // console.log(dokter);
             });
 
             //handle form batal kontrol submit
-            $('#formBatalKontrol').on('submit', function(e) {
-                e.preventDefault(); // cegah submit biasa
-
-                let form = $(this);
-                let url = form.attr('action');
-                let data = form.serialize();
-
-                $.ajax({
-                    url: `/kontrol/send-notification/batal-kontrol`,
-                    type: "POST",
-                    data: data,
-                    beforeSend: function() {
-                        // Bisa tambahkan loader
-                        $('.btn-danger').prop('disabled', true).text('Menyimpan...');
-                    },
-                    success: function(response) {
-                        // contoh response sukses
-                        alert(response.message || 'Data berhasil disimpan!');
-                        $('#formBatalKontrol')[0].reset();
-                        $('#modalBatalKontrol').modal('hide'); // jika ada modal
-                        // reload table / data
-                    },
-                    error: function(xhr) {
-                        let res = xhr.responseJSON;
-                        if (res && res.errors) {
-                            let msg = '';
-                            $.each(res.errors, function(key, value) {
-                                msg += value[0] + "\n";
-                            });
-                            alert(msg);
-                        } else {
-                            alert("Terjadi kesalahan, silakan coba lagi.");
-                        }
-                    },
-                    complete: function() {
-                        $('.btn-danger').prop('disabled', false).text('Simpan Batal / Cuti');
+            // Submit form notifikasi kontrol
+            $('#formNotifikasi-Kontrol').on('submit', function(e) {
+                e.preventDefault(); // cegah form submit default dulu
+                let alasan = $('#alasan').val().trim();
+                console.log(alasan);
+                Swal.fire({
+                    title: 'Kirim Notifikasi',
+                    text: "Apakah Anda yakin ingin mengirim notifikasi ke semua pasien sesuai kriteria?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Kirim',
+                    cancelButtonText: 'Batal',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: 'kontrol/send-notification',
+                            type: 'post',
+                            data: {
+                                tglAwal: $('#tglAwal').val(),
+                                tglAkhir: $('#tglAkhir').val(),
+                                iddokter: $('#iddokter').val(),
+                                idruangan: $('#idruangan').val(),
+                                alasan: $('#alasan').val(),
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    title: "Berhasil",
+                                    text: "Pesan notifikasi telah dikirim ke semua pasien.",
+                                    icon: "success",
+                                    confirmButtonText: "Selesai"
+                                });
+                                $('#modal-formnotifikasikontrol').modal('hide');
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    title: "Gagal",
+                                    text: "Gagal mengirimkan notifikasi ke semua pasien.",
+                                    icon: "error",
+                                    confirmButtonText: "OK!"
+                                });
+                            }
+                        });
                     }
                 });
             });
+
+            // $('#formBatalKontrol').on('submit', function(e) {
+            //     e.preventDefault(); // cegah submit biasa
+
+            //     let form = $(this);
+            //     let url = form.attr('action');
+            //     let data = form.serialize();
+
+            //     $.ajax({
+            //         url: `/kontrol/send-notification/batal-kontrol`,
+            //         type: "POST",
+            //         data: data,
+            //         beforeSend: function() {
+            //             // Bisa tambahkan loader
+            //             $('.btn-danger').prop('disabled', true).text('Menyimpan...');
+            //         },
+            //         success: function(response) {
+            //             // contoh response sukses
+            //             alert(response.message || 'Data berhasil disimpan!');
+            //             $('#formBatalKontrol')[0].reset();
+            //             $('#modalBatalKontrol').modal('hide'); // jika ada modal
+            //             // reload table / data
+            //         },
+            //         error: function(xhr) {
+            //             let res = xhr.responseJSON;
+            //             if (res && res.errors) {
+            //                 let msg = '';
+            //                 $.each(res.errors, function(key, value) {
+            //                     msg += value[0] + "\n";
+            //                 });
+            //                 alert(msg);
+            //             } else {
+            //                 alert("Terjadi kesalahan, silakan coba lagi.");
+            //             }
+            //         },
+            //         complete: function() {
+            //             $('.btn-danger').prop('disabled', false).text('Simpan Batal / Cuti');
+            //         }
+            //     });
+            // });
         });
     </script>
 @endsection

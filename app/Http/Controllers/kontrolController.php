@@ -190,10 +190,13 @@ class kontrolController extends Controller
 
     public function kirimNotifikasi(Request $request)
     {
+        // dd($request->all());
         $tglAwal = $request->input('tglAwal');
         $tglAkhir = $request->input('tglAkhir');
+        $idDokter = $request->input('iddokter');
+        $idRuangan = $request->input('idruangan');
 
-        dispatch(new prosesNotifikasiPasienKontrol($tglAwal, $tglAkhir)); // Test kirim pesan
+        dispatch(new prosesNotifikasiPasienKontrol($tglAwal, $tglAkhir, $idDokter,$idRuangan)); // Test kirim pesan
 
         return response()->json([
             'message' => 'Notifikasi berhasil diproses.',
@@ -337,12 +340,12 @@ class kontrolController extends Controller
 
     public function notifikasiBatalPraktik(Request $request)
     {
-        dd($request->all());
+        // dd($request->all());
         $tglAwal = $request->input('tglAwal');
         $tglAkhir = $request->input('tglAkhir');
         $idRuangan = $request->input('idruangan');
         $idDokter = $request->input('iddokter');
-        $search = $request->input('search');
+        // $search = $request->input('search');
 
         dispatch(new notifikasiBatalPraktik($tglAwal, $tglAkhir, $idRuangan, $idDokter,$search)); // Test kirim pesan
 

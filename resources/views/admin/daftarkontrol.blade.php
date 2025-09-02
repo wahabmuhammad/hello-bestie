@@ -135,8 +135,8 @@
                     </div>
                     <div class="ms-md-2 text-secondary">
                         <a>Dokter</a>
-                        <input type="text" id="dokter" class="form-control" name="dokter" placeholder="Cari Dokter"
-                            autocomplete="off">
+                        <input type="text" id="dokter" class="form-control" name="dokter"
+                            placeholder="Cari Dokter" autocomplete="off">
                         <input type="hidden" id="iddokter" class="form-control" name="iddokter"
                             placeholder="Cari Dokter" autocomplete="off">
                         <ul id="dokterList" class="list-group"
@@ -201,105 +201,7 @@
     </div>
 
     {{-- modal list --}}
-    <div class="modal modal-blur fade" id="modal-report" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <form action="" method="POST">
-                @csrf
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Membuat Peserta Baru</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label strong">Nama</label>
-                            <input type="text" class="form-control" name="name" id="name"
-                                placeholder="Nama Lengkap dan Gelar">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label strong">NIK</label>
-                            <input type="password" class="form-control" name="text" id="password"
-                                placeholder="Password">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label strong">No Hp</label>
-                            <input type="text" class="form-control" name="email" id="email"
-                                placeholder="No HP">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label strong">Alamat</label>
-                            <input type="text" class="form-control" name="nip" id="nip"
-                                placeholder="Alamat">
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-8">
-                                <div class="mb-3">
-                                    <label class="form-label strong">Universitas/Sekolah</label>
-                                    <input type="text" class="form-control" name="nip" id="nip"
-                                        placeholder="Universitas/Sekolah">
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="mb-3">
-                                    <label class="form-label strong">STR</label>
-                                    <input type="text" class="form-control" name="nip" id="nip"
-                                        placeholder="STR">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label strong">Rekomendasi</label>
-                            <input type="text" class="form-control" name="nip" id="nip"
-                                placeholder="Rekomendasi">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label strong">Sertifikat</label>
-                            <input type="text" class="form-control" name="nip" id="nip"
-                                placeholder="Sertifikat">
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-8">
-                                <div class="mb-3">
-                                    <label class="form-label strong">Pendidikan</label>
-                                    <div class="input-group input-group-flat">
-                                        <input name="jabatan" id="jabatan" type="text" class="form-control"
-                                            autocomplete="off" placeholder="Pendidikan">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="mb-3">
-                                    <label class="form-label strong">Formasi</label>
-                                    <select class="form-select" name="role" id="role">
-                                        {{-- @foreach ($datapeserta as $data)
-                                            <option value="{{ $data->Formasi }}">{{ $data->Formasi }}</option>
-                                        @endforeach --}}
-                                        {{-- <option value="Perawat Bedah" selected>Perawat Bedah</option>
-                                        <option value="Perawat ICU">Perawat ICU</option>
-                                        <option value="Driver">Driver</option>
-                                        <option value="Staff IPSRS">Staff IPSRS</option>
-                                        <option value="Juru Masak">Juru Masak</option>
-                                        <option value="Penatalaksana Laundry">Penatalaksana Laundry</option>
-                                        <option value="Sanitasi">Sanitasi</option>
-                                        <option value="SDI">SDI</option>
-                                        <option value="Kasir">Kasir</option>
-                                        <option value=""></option> --}}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
-                            Batal
-                        </a>
-                        <input class="btn btn-primary ms-auto" type="submit" name="create-user" id="create-user"
-                            value="Buat Akun User">
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    @include('layout.modal')
 
     <script type="text/javascript">
         $(document).ready(function() {
@@ -385,25 +287,63 @@
             // Load data awal
             loadData();
 
-            $('#kirim-notifikasi').on('click', function() {
-                $.ajax({
-                    url: 'kontrol/send-notification',
-                    type: 'post',
-                    data: {
-                        tglAwal: $('#tglAwal').val(),
-                        tglAkhir: $('#tglAkhir').val(),
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        Swal.fire({
-                            title: "Berhasil",
-                            text: "Pesan notifikasi telah dikirim ke semua pasien.",
-                            icon: "success",
-                            confirmButtonText: "Selesai"
+            // Kirim notifikasi
+            $(`#kirim-notifikasi`).on('click', function() {
+                let dokter = $('#dokter').val(); // ambil nama dokter terbaru
+                let iddokter = $('#iddokter').val(); // kalau butuh ID juga
+                let ruangan = $('#ruangan').val(); // ambil nama ruangan terbaru
+                let idruangan = $('#idruangan').val(); // kalau butuh ID juga
+
+                $('#modal-formnotifikasikontrol').modal('show');
+                $('#tglkontrolawal-modal-notifikasi').val(currentTglAwal);
+                $('#tglkontrolakhir-modal-notifikasi').val(currentTglAkhir);
+                $('#dokter-modal-notifikasi').val(dokter);
+                $('#iddokter-modal-notifikasi').val(iddokter);
+                $('#idruangan-modal-notifikasi').val(idruangan);
+                $('#ruangan-modal-notifikasi').val(ruangan);
+            });
+
+            // Submit form notifikasi kontrol
+            $('#formNotifikasi-Kontrol').on('submit', function(e) {
+                e.preventDefault(); // cegah form submit default dulu
+
+                Swal.fire({
+                    title: 'Kirim Notifikasi',
+                    text: "Apakah Anda yakin ingin mengirim notifikasi ke semua pasien sesuai kriteria?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Kirim',
+                    cancelButtonText: 'Batal',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: 'kontrol/send-notification',
+                            type: 'post',
+                            data: {
+                                tglAwal: $('#tglAwal').val(),
+                                tglAkhir: $('#tglAkhir').val(),
+                                iddokter: $('#iddokter').val(),
+                                idruangan: $('#idruangan').val(),
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    title: "Berhasil",
+                                    text: "Pesan notifikasi telah dikirim ke semua pasien.",
+                                    icon: "success",
+                                    confirmButtonText: "Selesai"
+                                });
+                                $('#modal-formnotifikasikontrol').modal('hide');
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    title: "Gagal",
+                                    text: "Gagal mengirimkan notifikasi ke semua pasien.",
+                                    icon: "error",
+                                    confirmButtonText: "OK!"
+                                });
+                            }
                         });
-                    },
-                    error: function() {
-                        alert('Gagal mengirim notifikasi.');
                     }
                 });
             });

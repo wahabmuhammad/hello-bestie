@@ -1,4 +1,4 @@
-{{-- Modal  --}}
+{{-- Modal Kirim Notifikasi Batal Kontrol/Cuti --}}
 <div class="modal modal-blur fade" id="modal-formnotifikasi" tabindex="-1" style="display: none;" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         {{-- <div class="modal-content">
@@ -120,11 +120,11 @@
             </div>
 
             <!-- Nav Tabs -->
-            <ul class="nav nav-tabs nav-fill" id="editLayananTab" role="tablist" style="justify-content: center" >
-    
+            <ul class="nav nav-tabs nav-fill" id="editLayananTab" role="tablist" style="justify-content: center">
+
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="batal-tab" data-bs-toggle="tab" data-bs-target="#batal" type="button"
-                        role="tab">
+                    <button class="nav-link active" id="batal-tab" data-bs-toggle="tab" data-bs-target="#batal"
+                        type="button" role="tab">
                         Batal Praktik / Cuti
                     </button>
                 </li>
@@ -137,7 +137,6 @@
             </ul>
 
             <div class="tab-content p-3">
-
                 <!-- TAB BATAL KONTROL / CUTI -->
                 <div class="tab-pane fade show active" id="batal" role="tabpanel">
                     <form action="" method="POST" id="formBatalKontrol">
@@ -145,25 +144,29 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label class="form-label">Tanggal Awal Rencana Kontrol</label>
-                                <input type="date" name="tglkontrolawal" class="form-control" id="tglkontrolawal-modal" readonly>
+                                <input type="date" name="tglkontrolawal" class="form-control"
+                                    id="tglkontrolawal-modal" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Tanggal Awal Rencana Kontrol</label>
-                                <input type="date" name="tglkontrolakhir" class="form-control" id="tglkontrolakhir-modal" readonly>
+                                <input type="date" name="tglkontrolakhir" class="form-control"
+                                    id="tglkontrolakhir-modal" readonly>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Dokter</label>
                                 <input type="text" name="dokter" class="form-control" id="dokter-modal" readonly>
+                                <input type="hidden" name="iddokter" id="iddokter-modal">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Ruangan</label>
                                 <input type="text" name="ruangan" class="form-control" id="ruangan-modal" readonly>
+                                <input type="hidden" name="idruangan" id="idruangan-modal">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Alasan Batal / Cuti</label>
                                 <textarea name="alasan" class="form-control" rows="3" id="alasan"></textarea>
                             </div>
-                            
+
                         </div>
                         <div class="modal-footer">
                             <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</a>
@@ -178,9 +181,31 @@
                         @csrf
                         <div class="modal-body">
                             <div class="mb-3">
+                                <label class="form-label">Tanggal Awal Rencana Kontrol</label>
+                                <input type="date" name="tglkontrolawal" class="form-control"
+                                    id="tglkontrolawal-jadwal" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tanggal Awal Rencana Kontrol</label>
+                                <input type="date" name="tglkontrolakhir" class="form-control"
+                                    id="tglkontrolakhir-jadwal" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Dokter</label>
+                                <input type="text" name="dokter" class="form-control" id="dokter-jadwal"
+                                    readonly>
+                                <input type="hidden" name="iddokter" id="iddokter-jadwal">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ruangan</label>
+                                <input type="text" name="ruangan" class="form-control" id="ruangan-jadwal"
+                                    readonly>
+                                <input type="hidden" name="idruangan" id="idruangan-jadwal">
+                            </div>
+                            {{-- <div class="mb-3">
                                 <label class="form-label">Jadwal Lama</label>
                                 <input type="text" class="form-control" readonly>
-                            </div>
+                            </div> --}}
                             <div class="mb-3">
                                 <label class="form-label">Jadwal Baru</label>
                                 <input type="date" name="jadwalbaru" class="form-control">
@@ -189,6 +214,56 @@
                         <div class="modal-footer">
                             <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</a>
                             <button type="submit" class="btn btn-warning ms-auto">Simpan Perubahan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{-- Modal Kirim Notifikasi Kontrol --}}
+<div class="modal modal-blur fade" id="modal-formnotifikasikontrol" tabindex="-1" style="display: none;"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Form Notifikasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="tab-content p-3">
+                <!-- TAB BATAL KONTROL / CUTI -->
+                <div class="tab-pane fade show active" id="batal" role="tabpanel">
+                    <form action="{{ route('kirimNotifikasi') }}" method="POST" id="formNotifikasi-Kontrol">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Tanggal Awal Rencana Kontrol</label>
+                                <input type="date" name="tglkontrolawal" class="form-control"
+                                    id="tglkontrolawal-modal-notifikasi" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tanggal Awal Rencana Kontrol</label>
+                                <input type="date" name="tglkontrolakhir" class="form-control"
+                                    id="tglkontrolakhir-modal-notifikasi" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Dokter</label>
+                                <input type="text" name="dokter" class="form-control"
+                                    id="dokter-modal-notifikasi" readonly>
+                                <input type="hidden" name="iddokter" id="iddokter-modal-notifikasi">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ruangan</label>
+                                <input type="text" name="ruangan" class="form-control"
+                                    id="ruangan-modal-notifikasi" readonly>
+                                <input type="hidden" name="idruangan" id="idruangan-modal-notifikasi">
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</a>
+                            <button type="submit" class="btn btn-danger ms-auto">Kirim Notifikasi</button>
                         </div>
                     </form>
                 </div>
