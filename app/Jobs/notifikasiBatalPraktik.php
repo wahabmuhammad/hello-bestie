@@ -17,13 +17,13 @@ class notifikasiBatalPraktik implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct($tglAwal, $tglAkhir, $idRuangan, $idDokter, $search)
+    public function __construct($tglAwal, $tglAkhir, $idRuangan, $idDokter)
     {
         $this->tglAwal = $tglAwal;
         $this->tglAkhir = $tglAkhir;
         $this->idRuangan = $idRuangan;
         $this->idDokter = $idDokter;
-        $this->search = $search;
+        // $this->search = $search;
     }
 
     /**
@@ -90,7 +90,8 @@ class notifikasiBatalPraktik implements ShouldQueue
                 'pasien_m.tgllahir',
                 DB::raw("COALESCE(split_part(ed.value, '~', 2), '-') as namadokter")
             )
-            ->orderBy('emrpasiend_t.value', 'asc');
+            ->orderBy('emrpasiend_t.value', 'asc')
+            ->limit(1);
 
         $datas = $query->get(); // FIX
 
@@ -110,22 +111,19 @@ class notifikasiBatalPraktik implements ShouldQueue
 
             $pesan = "Assalamu'alaikum Wr. Wb.\n\n"
                 . "Kepada Yth. *" . trim($data->namapasien) . "*\n\n"
-                . "Kami dari RS Sarkies 'Aisyiyah Kudus ingin menginformasikan jadwal kontrol pada:\n\n"
+                . "Kami dari RS Sarkies 'Aisyiyah Kudus ingin menginformasikan *Jadwal Praktik Dokter Cuti* pada:\n\n"
                 . "Hari, tgl   : " . trim($data->harikontrol) . ", " . trim($data->formatTgl) . "\n"
                 . "Poliklinik  : " . trim($data->namaruangan) . "\n"
                 . "Dokter      : " . trim($namadokter) . "\n"
                 . "*Jadwal dokter bisa berubah sewaktu-waktu*\n\n"
-                . "- Jika pembiayaan dengan BPJS, pendaftaran melalui aplikasi Mobile JKN, maksimal dilakukan H-1 dari hari pemeriksaan\n\n"
-                . "Harap membawa persyaratan berikut ini:\n"
-                . "1. Surat kontrol\n"
-                . "2. Resume medis (bagi pasien rawat inap)\n\n"
                 . "Demikian informasi yang dapat kami sampaikan, atas perhatiannya kami sampaikan terimakasih.\n\n"
                 . "Salam sehat.\n\n"
                 . "*Perihal jadwal dokter bisa klik dan ikuti link dibawah ini👇🏻.*\n"
                 . "https://whatsapp.com/channel/0029Vamy8ZSDeON9NVKWcb1K\n\n"
                 . "Wassalamu’alaikum Wr. Wb.";
 
-            $phone = '0' . ltrim($data->nohp, '0');
+            // $phone = '0' . ltrim($data->nohp, '0');
+            $phone = '081215837977';
 
             dispatch(new kirimPesanFonnte($phone, $pesan))
                 ->delay(now()->addSeconds($delay));
