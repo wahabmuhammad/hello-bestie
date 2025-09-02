@@ -85,7 +85,7 @@ class prosesNotifikasiPasienKontrol implements ShouldQueue
             )
             ->orderBy('emrpasiend_t.value', 'asc')
             ->get();
-        dd($datas);
+        // dd($datas);
         Carbon::setLocale('id');
         $delay = 0;
         foreach ($datas as $data) {
