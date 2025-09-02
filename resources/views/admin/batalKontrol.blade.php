@@ -407,7 +407,7 @@
 
             //handle form batal kontrol submit
             // Submit form notifikasi kontrol
-            $('#formNotifikasi-Kontrol').on('submit', function(e) {
+            $('#formBatalKontrol').on('submit', function(e) {
                 e.preventDefault(); // cegah form submit default dulu
                 let alasan = $('#alasan').val().trim();
                 console.log(alasan);
@@ -421,7 +421,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: 'kontrol/send-notification',
+                            url: '/kontrol/send-notification/batal-kontrol',
                             type: 'post',
                             data: {
                                 tglAwal: $('#tglAwal').val(),
@@ -429,6 +429,54 @@
                                 iddokter: $('#iddokter').val(),
                                 idruangan: $('#idruangan').val(),
                                 alasan: $('#alasan').val(),
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    title: "Berhasil",
+                                    text: "Pesan notifikasi telah dikirim ke semua pasien.",
+                                    icon: "success",
+                                    confirmButtonText: "Selesai"
+                                });
+                                $('#modal-formnotifikasikontrol').modal('hide');
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    title: "Gagal",
+                                    text: "Gagal mengirimkan notifikasi ke semua pasien.",
+                                    icon: "error",
+                                    confirmButtonText: "OK!"
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+            $('#formRubahJadwal').on('submit', function(e) {
+                e.preventDefault(); // cegah form submit default dulu
+                // let alasan = $('#alasan').val().trim();
+                console.log(alasan);
+                Swal.fire({
+                    title: 'Kirim Notifikasi',
+                    text: "Apakah Anda yakin ingin mengirim notifikasi ke semua pasien sesuai kriteria?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Kirim',
+                    cancelButtonText: 'Batal',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/kontrol/send-notification/rubah-jadwal',
+                            type: 'post',
+                            data: {
+                                tglAwal: $('#tglkontrolawal-jadwal').val(),
+                                tglAkhir: $('#tglkontrolakhir-jadwal').val(),
+                                iddokter: $('#iddokter-jadwal').val(),
+                                idruangan: $('#idruangan-jadwal').val(),
+                                jadwalPraktik: $('#jadwalPraktik').val(),
+                                jamPraktik: $('#jamPraktik').val(),
+                                akhirjamPraktik: $('#akhirjamPraktik').val(),
                                 _token: '{{ csrf_token() }}'
                             },
                             success: function(response) {
