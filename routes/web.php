@@ -24,3 +24,4 @@ Route::get('/kontrol/get-ruangan', [kontrolController::class, 'getRuangan'])->na
 Route::get('/kontrol/get-dokter', [kontrolController::class, 'getDokter'])->name('getDokter');
 
 Route::post('/kontrol/send-notification/batal-kontrol', [kontrolController::class, 'notifikasiBatalPraktik'])->name('notifikasiBatalPraktik');
+Route::post('/kontrol/send-notification/rubah-jadwal', [kontrolController::class, 'rubahJadwal'])->name('rubahJadwal');
