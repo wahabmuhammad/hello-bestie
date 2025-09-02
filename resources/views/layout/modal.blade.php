@@ -202,13 +202,17 @@
                                     readonly>
                                 <input type="hidden" name="idruangan" id="idruangan-jadwal">
                             </div>
-                            {{-- <div class="mb-3">
-                                <label class="form-label">Jadwal Lama</label>
-                                <input type="text" class="form-control" readonly>
-                            </div> --}}
                             <div class="mb-3">
-                                <label class="form-label">Jadwal Baru</label>
-                                <input type="date" name="jadwalbaru" class="form-control">
+                                <label class="form-label">Jadwal Praktik</label>
+                                <input type="date" name="jadwalPraktik" id="jadwalPraktik" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Jam Praktik</label>
+                                <input type="time" name="jamPraktik" id="jamPraktik" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Jam Praktik</label>
+                                <input type="time" name="akhirjamPraktik" id="akhirjamPraktik" class="form-control">
                             </div>
                         </div>
                         <div class="modal-footer">
