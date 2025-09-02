@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\kirimPesanFonnte;
 use App\Jobs\notifikasiBatalPraktik;
+use App\Jobs\perubahanJadwalPraktik;
 use App\Jobs\prosesNotifikasiPasienKontrol;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -196,7 +197,7 @@ class kontrolController extends Controller
         $idDokter = $request->input('iddokter');
         $idRuangan = $request->input('idruangan');
 
-        dispatch(new prosesNotifikasiPasienKontrol($tglAwal, $tglAkhir, $idDokter,$idRuangan)); // Test kirim pesan
+        dispatch(new prosesNotifikasiPasienKontrol($tglAwal, $tglAkhir, $idDokter, $idRuangan)); // Test kirim pesan
 
         return response()->json([
             'message' => 'Notifikasi berhasil diproses.',
@@ -347,7 +348,28 @@ class kontrolController extends Controller
         $idDokter = $request->input('iddokter');
         // $search = $request->input('search');
 
-        dispatch(new notifikasiBatalPraktik($tglAwal, $tglAkhir, $idRuangan, $idDokter,$search)); // Test kirim pesan
+        dispatch(new notifikasiBatalPraktik($tglAwal, $tglAkhir, $idRuangan, $idDokter)); // Test kirim pesan
+
+        return response()->json([
+            'message' => 'Notifikasi batal praktik berhasil diproses.',
+            'status' => 'success',
+            'code' => 200,
+        ]);
+    }
+
+    public function rubahjadwal(Request $request)
+    {
+        // dd($request->all());
+        $tglAwal = $request->input('tglAwal');
+        $tglAkhir = $request->input('tglAkhir');
+        $idRuangan = $request->input('idruangan');
+        $idDokter = $request->input('iddokter');
+        $jadwalPraktik = $request->input('jadwalPraktik');
+        $jamPraktik = $request->input('jamPraktik');
+        $akhirJamPraktik = $request->input('akhirjamPraktik');
+        // $search = $request->input('search');
+
+        dispatch(new perubahanJadwalPraktik($tglAwal, $tglAkhir, $idRuangan, $idDokter, $jamPraktik, $jadwalPraktik, $akhirJamPraktik)); // Test kirim pesan
 
         return response()->json([
             'message' => 'Notifikasi batal praktik berhasil diproses.',
