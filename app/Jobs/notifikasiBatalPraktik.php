@@ -80,18 +80,17 @@ class notifikasiBatalPraktik implements ShouldQueue
                 }
             })
             ->select(
-                'pegawai_m.namalengkap as namapegawai',
+                // 'pegawai_m.namalengkap as namapegawai',
                 'emrpasien_t.namaruangan',
-                'emrpasien_t.noemr',
+                // 'emrpasien_t.noemr',
                 'emrpasiend_t.value as tglkontrol',
-                'pasien_m.nocm',
+                // 'pasien_m.nocm',
                 'pasien_m.namapasien',
                 'pasien_m.nohp',
-                'pasien_m.tgllahir',
+                // 'pasien_m.tgllahir',
                 DB::raw("COALESCE(split_part(ed.value, '~', 2), '-') as namadokter")
             )
-            ->orderBy('emrpasiend_t.value', 'asc')
-            ->limit(1);
+            ->orderBy('emrpasiend_t.value', 'asc');
 
         $datas = $query->get(); // FIX
 
@@ -122,8 +121,8 @@ class notifikasiBatalPraktik implements ShouldQueue
                 . "https://whatsapp.com/channel/0029Vamy8ZSDeON9NVKWcb1K\n\n"
                 . "Wassalamu’alaikum Wr. Wb.";
 
-            // $phone = '0' . ltrim($data->nohp, '0');
-            $phone = '081215837977';
+            $phone = '0' . ltrim($data->nohp, '0');
+            // $phone = '081215837977';
 
             dispatch(new kirimPesanFonnte($phone, $pesan))
                 ->delay(now()->addSeconds($delay));

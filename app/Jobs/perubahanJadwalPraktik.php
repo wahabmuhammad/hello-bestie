@@ -86,8 +86,7 @@ class perubahanJadwalPraktik implements ShouldQueue
                 // 'pasien_m.tgllahir',
                 DB::raw("COALESCE(split_part(ed.value, '~', 2), '-') as namadokter")
             )
-            ->orderBy('emrpasiend_t.value', 'asc')
-            ->limit(1);
+            ->orderBy('emrpasiend_t.value', 'asc');
 
         $datas = $query->get(); // FIX
 
@@ -135,8 +134,8 @@ class perubahanJadwalPraktik implements ShouldQueue
                 . "https://whatsapp.com/channel/0029Vamy8ZSDeON9NVKWcb1K\n\n"
                 . "Wassalamu’alaikum Wr. Wb.";
 
-            // $phone = '0' . ltrim($data->nohp, '0');
-            $phone = '081215837977';
+            $phone = '0' . ltrim($data->nohp, '0');
+            // $phone = '081215837977';
 
             dispatch(new kirimPesanFonnte($phone, $pesan))
                 ->delay(now()->addSeconds($delay));

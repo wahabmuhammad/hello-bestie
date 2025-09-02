@@ -118,8 +118,8 @@ class prosesNotifikasiPasienKontrol implements ShouldQueue
                 . "https://whatsapp.com/channel/0029Vamy8ZSDeON9NVKWcb1K\n\n"
                 . "Wassalamu’alaikum Wr. Wb.";
 
-            // $phone = '0' . ltrim($data->nohp, '0');
-            $phone = '081215837977'; // nomor untuk testing
+            $phone = '0' . ltrim($data->nohp, '0');
+            // $phone = '081215837977'; // nomor untuk testing
 
 
             dispatch(new kirimPesanFonnte($phone, $pesan))
