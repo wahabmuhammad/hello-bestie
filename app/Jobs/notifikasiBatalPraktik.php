@@ -13,17 +13,19 @@ use Illuminate\Support\Facades\DB;
 class notifikasiBatalPraktik implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $tglAwal, $tglAkhir, $idRuangan, $idDokter, $search;
+    protected $tglAwal, $tglAkhir, $idRuangan, $idDokter, $tglawalcuti, $tglakhircuti, $search;
     /**
      * Create a new job instance.
      */
-    public function __construct($tglAwal, $tglAkhir, $idRuangan, $idDokter)
+    public function __construct($tglAwal, $tglAkhir, $idRuangan, $idDokter, $tglawalcuti, $tglakhircuti, $search = null)
     {
         $this->tglAwal = $tglAwal;
         $this->tglAkhir = $tglAkhir;
         $this->idRuangan = $idRuangan;
         $this->idDokter = $idDokter;
-        // $this->search = $search;
+        $this->tglawalcuti = $tglawalcuti;
+        $this->tglakhircuti = $tglakhircuti;
+        $this->search = $search;
     }
 
     /**
@@ -31,6 +33,19 @@ class notifikasiBatalPraktik implements ShouldQueue
      */
     public function handle(): void
     {
+        Carbon::setLocale('id');
+        $tglawalcuti = $this->tglawalcuti;
+        $tglakhircuti = $this->tglakhircuti;
+        if (!empty($tglawalcuti)) {
+            $awalCuti = Carbon::parse($tglawalcuti);
+            $awalCutiFormatted = $awalCuti->translatedFormat('d F Y');
+        }
+
+        if (!empty($tglakhircuti)) {
+            $akhirCuti = Carbon::parse($tglakhircuti);
+            $akhirCutiFormatted = $akhirCuti->translatedFormat('d F Y');
+        }
+
         $query = DB::table('emrpasiend_t')
             ->leftJoin('emrpasien_t', 'emrpasien_t.noemr', '=', 'emrpasiend_t.emrpasienfk')
             ->leftJoin('pasien_m', 'pasien_m.nocm', '=', 'emrpasien_t.nocm')
@@ -94,7 +109,6 @@ class notifikasiBatalPraktik implements ShouldQueue
 
         $datas = $query->get(); // FIX
 
-        Carbon::setLocale('id');
         $delay = 0;
         foreach ($datas as $data) {
             if ($data->tglkontrol) {
@@ -106,23 +120,25 @@ class notifikasiBatalPraktik implements ShouldQueue
                 $data->formatTgl = '-';
             }
 
+
             $namadokter = $data->namadokter ?: '-';
 
             $pesan = "Assalamu'alaikum Wr. Wb.\n\n"
                 . "Kepada Yth. *" . trim($data->namapasien) . "*\n\n"
                 . "Kami dari RS Sarkies 'Aisyiyah Kudus ingin menginformasikan *Jadwal Praktik Dokter Cuti* pada:\n\n"
-                . "Hari, tgl   : " . trim($data->harikontrol) . ", " . trim($data->formatTgl) . "\n"
-                . "Poliklinik  : " . trim($data->namaruangan) . "\n"
-                . "Dokter      : " . trim($namadokter) . "\n"
+                . "Hari, tgl        : " . trim($data->harikontrol) . ", " . trim($data->formatTgl) . "\n"
+                . "Poliklinik      : " . trim($data->namaruangan) . "\n"
+                . "Dokter         : " . trim($namadokter) . "\n"
+                . "Tanggal Cuti : " . trim($awalCutiFormatted) . " s/d " . trim($akhirCutiFormatted) . "\n\n"
                 . "*Jadwal dokter bisa berubah sewaktu-waktu*\n\n"
                 . "Demikian informasi yang dapat kami sampaikan, atas perhatiannya kami sampaikan terimakasih.\n\n"
                 . "Salam sehat.\n\n"
                 . "*Perihal jadwal dokter bisa klik dan ikuti link dibawah ini👇🏻.*\n"
                 . "https://whatsapp.com/channel/0029Vamy8ZSDeON9NVKWcb1K\n\n"
                 . "Wassalamu’alaikum Wr. Wb.";
-
-            $phone = '0' . ltrim($data->nohp, '0');
-            // $phone = '081215837977';
+            dd($pesan);
+            // $phone = '0' . ltrim($data->nohp, '0');
+            $phone = '081215837977';
 
             dispatch(new kirimPesanFonnte($phone, $pesan))
                 ->delay(now()->addSeconds($delay));
