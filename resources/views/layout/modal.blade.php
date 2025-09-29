@@ -163,6 +163,14 @@
                                 <input type="hidden" name="idruangan" id="idruangan-modal">
                             </div>
                             <div class="mb-3">
+                                <label class="form-label">Tanggal Awal Cuti</label>
+                                <input type="date" name="tglawalcuti" class="form-control" id="tglawalcuti-modal">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tanggal Akhir Cuti</label>
+                                <input type="date" name="tglakhircuti" class="form-control" id="tglakhircuti-modal">
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label">Alasan Batal / Cuti</label>
                                 <textarea name="alasan" class="form-control" rows="3" id="alasan"></textarea>
                             </div>
