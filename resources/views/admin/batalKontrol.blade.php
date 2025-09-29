@@ -186,6 +186,8 @@
             let today = new Date().toISOString().split('T')[0];
             $('#tglAwal').val($('#tglAwal').val() || today);
             $('#tglAkhir').val($('#tglAkhir').val() || today);
+            $('#tglawalcuti-modal').val($('#tglawalcuti-modal').val() || today);
+            $('#tglakhircuti-modal').val($('#tglakhircuti-modal').val() || today);
 
             // Fungsi untuk load data dari server
             function loadData(page = 1) {
@@ -426,6 +428,8 @@
                             data: {
                                 tglAwal: $('#tglAwal').val(),
                                 tglAkhir: $('#tglAkhir').val(),
+                                tglawalcuti: $('#tglawalcuti-modal').val(),
+                                tglakhircuti: $('#tglakhircuti-modal').val(),
                                 iddokter: $('#iddokter').val(),
                                 idruangan: $('#idruangan').val(),
                                 alasan: $('#alasan').val(),
