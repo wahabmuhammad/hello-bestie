@@ -346,9 +346,11 @@ class kontrolController extends Controller
         $tglAkhir = $request->input('tglAkhir');
         $idRuangan = $request->input('idruangan');
         $idDokter = $request->input('iddokter');
+        $tglawalcuti = $request->input('tglawalcuti');
+        $tglakhircuti = $request->input('tglakhircuti');
         // $search = $request->input('search');
 
-        dispatch(new notifikasiBatalPraktik($tglAwal, $tglAkhir, $idRuangan, $idDokter)); // Test kirim pesan
+        dispatch(new notifikasiBatalPraktik($tglAwal, $tglAkhir, $idRuangan, $idDokter, $tglawalcuti, $tglakhircuti)); // Test kirim pesan
 
         return response()->json([
             'message' => 'Notifikasi batal praktik berhasil diproses.',
