@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\DB;
 class kontrolController extends Controller
 {
 
+    public function indexhome()
+    {
+        return view('admin.homeKontrol');
+    }
+
     public function index(Request $request)
     {
         $search = $request->input('search');

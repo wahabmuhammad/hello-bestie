@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'bod' => [
+        'base_url' => env('BASE_URL_BOD_API'),
+        'api_key' => env('X_API_KEY'),
+        'api_secret' => env('X_API_SECRET'),
+    ],
+
 ];

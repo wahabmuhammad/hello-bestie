@@ -1,5 +1,4 @@
 @extends('layout.masterLayout')
-
 @section('content')
     <div class="container-fluid">
         <div class="row g-2 align-items-center">
@@ -9,7 +8,7 @@
                     Administrator
                 </div>
                 <h2 class="page-title">
-                    Menu Notifikasi Jadwal Kontrol Pasien
+                    Index Kunjungan Pasien Rawat Jalan
                 </h2>
             </div>
             <!-- Page title actions -->
@@ -27,17 +26,6 @@
                         </svg>
                         Export Excell
                     </a>
-                    <a href="#" class="btn btn-white d-sm-none btn-icon" data-bs-toggle="modal"
-                        data-bs-target="#modal-report" aria-label="Buat User Baru">
-                        <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-export"
-                            width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                            <path d="M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3" />
-                        </svg>
-                    </a>
                 </div>
             </div>
             <div class="col-auto ms-auto d-print-none">
@@ -51,11 +39,8 @@
                             <path d="M14 3v4a1 1 0 0 0 1 1h4" />
                             <path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3" />
                         </svg>
-                        Kirim Semua Notifikasi
+                        Kirim Semua data Kunjungan
                     </button>
-                    {{-- <a class="btn btn-cyan d-none d-sm-inline-block">
-                            
-                        </a> --}}
                     <a href="#" class="btn btn-cyan d-none d-sm-inline-block" data-bs-toggle="modal"
                         data-bs-target="#modal-report">
                         <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
@@ -66,19 +51,9 @@
                             <path d="M14 3v4a1 1 0 0 0 1 1h4" />
                             <path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3" />
                         </svg>
-                        Kirim Single Notifikasi
+                        Kirim Single Data Kunjungan
                     </a>
-                    <a href="#" class="btn btn-cyan d-sm-none btn-icon" data-bs-toggle="modal"
-                        data-bs-target="#modal-report" aria-label="Buat User Baru">
-                        <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-import"
-                            width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                            <path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3" />
-                        </svg>
-                    </a>
+
                 </div>
             </div>
             {{-- <div class="col-auto ms-auto d-print-none">
@@ -126,8 +101,8 @@
                     </div>
                     <div class="ms-md-2 text-secondary">
                         <a>Ruangan</a>
-                        <input type="text" id="ruangan" class="form-control" name="ruangan"
-                            placeholder="Cari Ruangan" autocomplete="off">
+                        <input type="text" id="ruangan" class="form-control" name="ruangan" placeholder="Cari Ruangan"
+                            autocomplete="off">
                         <input type="hidden" id="idruangan" class="form-control" name="idruangan"
                             placeholder="Cari Ruangan" autocomplete="off">
                         <ul id="ruanganList" class="list-group"
@@ -135,10 +110,10 @@
                     </div>
                     <div class="ms-md-2 text-secondary">
                         <a>Dokter</a>
-                        <input type="text" id="dokter" class="form-control" name="dokter"
-                            placeholder="Cari Dokter" autocomplete="off">
-                        <input type="hidden" id="iddokter" class="form-control" name="iddokter"
-                            placeholder="Cari Dokter" autocomplete="off">
+                        <input type="text" id="dokter" class="form-control" name="dokter" placeholder="Cari Dokter"
+                            autocomplete="off">
+                        <input type="hidden" id="iddokter" class="form-control" name="iddokter" placeholder="Cari Dokter"
+                            autocomplete="off">
                         <ul id="dokterList" class="list-group"
                             style="display: none; z-index: 1000; max-height:200px; overflow-y:auto; width:100%;"></ul>
                     </div>
@@ -161,23 +136,26 @@
 
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-vcenter table-mobile-md card-table">
+                    <table class="table table-vcenter card-table">
                         <thead>
                             <tr>
-                                <th>No</th>
-                                <th>Nama</th>
-                                <th>No RM</th>
-                                <th>Tanggal Lahir</th>
-                                <th>No HP</th>
-                                <th>Poliklinik</th>
-                                <th>Dokter</th>
-                                <th>Tanggal Kontrol</th>
+                                <th style="text-align: center">No</th>
+                                <th style="text-align: center">No Registrasi</th>
+                                <th style="text-align: center">Nama Pasien</th>
+                                <th style="text-align: center">No RM</th>
+                                <th style="text-align: center">Tanggal Masuk</th>
+                                <th style="text-align: center">Tanggal Pulang</th>
+                                <th style="text-align: center">Penjamin</th>
+                                <th style="text-align: center">Ruangan</th>
+                                <th style="text-align: center">Dokter Pemeriksa</th>
                             </tr>
                         </thead>
                         <tbody class="table-body" id="table-body">
+
                         </tbody>
                         <!-- Pagination Links -->
                     </table>
+
                 </div>
                 <div class="card-footer">
                     {{-- Loader --}}
@@ -218,7 +196,7 @@
                 const idDokter = $('#iddokter').val();
 
                 $.ajax({
-                    url: 'kontrol?page=' + page,
+                    url: 'daftar-kunjungan-kontrol?page=' + page,
                     type: 'get',
                     data: {
                         tglAwal: tglAwal,
@@ -233,21 +211,23 @@
                         $('#table-body').html(''); // kosongkan isi tabel biar tidak bingung
                     },
                     success: function(response) {
+                        console.log(response); // cek data response dari server
                         let rows = '';
                         const startIndex = (page - 1) * 10;
 
                         $.each(response.datas, function(index, data) {
                             const rowNumber = startIndex + index + 1;
 
-                            rows += `<tr class="patient-row" data-emrpasien="${data.noemr}">
-                                    <td>${rowNumber}</td>
-                                    <td>${data.namapasien}</td>
-                                    <td>${data.nocm}</td>
-                                    <td>${data.tgllahir}</td>
-                                    <td>${data.nohp}</td>
-                                    <td>${data.namaruangan}</td>
-                                    <td>${data.namadokter}</td>
-                                    <td>${data.tglkontrol}</td>
+                            rows += `<tr class="patient-row" data-norecpd="${data.norec_pd}">
+                                    <td style="text-align: center">${rowNumber}</td>
+                                    <td style="text-align: center">${data.noregistrasi}</td>
+                                    <td style="text-align: center">${data.namapasien}</td>
+                                    <td style="text-align: center">${data.nocm}</td>
+                                    <td style="text-align: center">${data.tglregistrasi}</td>
+                                    <td style="text-align: center">${data.tglpulang}</td>
+                                    <td style="text-align: center">${data.kelompokpasien}</td>
+                                    <td style="text-align: center">${data.namaruangan}</td>
+                                    <td style="text-align: center">${data.namadokter}</td>
                                 </tr>`;
                         });
 
@@ -316,7 +296,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: 'kontrol/send-notification',
+                            url: 'daftar-kunjungan/send-data',
                             type: 'post',
                             data: {
                                 tglAwal: $('#tglAwal').val(),
