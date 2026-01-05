@@ -109,7 +109,8 @@ class indexKunjunganController extends Controller
                 'pegawai_m.id as iddokter',
                 // 'ruangan_m.id as idruangan',
                 'ruangan_m.namaruangan',
-                'kelompokpasien_m.kelompokpasien'
+                'kelompokpasien_m.kelompokpasien',
+                'antrianpasiendiperiksa_t.objectkelasfk as idkelas'
             )
             ->orderBy('pasiendaftar_t.noregistrasi', 'asc')
             ->paginate(25);

@@ -128,7 +128,7 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                     'pp.iscito',
                     'pp.isparamedis'
                 )
-                ->whereNull('pp.aturanpakai')
+                // ->whereNull('pp.aturanpakai')
                 ->where('pd.noregistrasi', '=', $noregistrasi)
                 ->where('apd.objectruanganfk', '=', $idRuangan)
                 ->orderBy('pp.tglpelayanan', 'asc')
@@ -205,7 +205,6 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                 INNER JOIN pelayananpasien_t AS pp 
                     ON pp.noregistrasifk = apd.norec
                 WHERE pd.noregistrasi = :noregistrasi
-                AND pp.aturanpakai IS NULL
                 AND apd.objectruanganfk = :idRuangan
                 AND pp.produkfk NOT IN (402611)",
                 [
@@ -228,7 +227,6 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                     ON sp.norec = pp.strukfk
                 WHERE pd.noregistrasi = :noregistrasi
                 AND sp.nosbmlastfk IS NOT NULL
-                AND pp.aturanpakai IS NULL
                 AND apd.objectruanganfk = :idRuangan
                 AND pp.produkfk NOT IN (402611)",
                 [
@@ -250,7 +248,6 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                     ON pp.noregistrasifk = apd.norec
                 WHERE pd.noregistrasi = :noregistrasi
                 AND pp.strukfk IS NOT NULL
-                AND pp.aturanpakai IS NULL
                 AND apd.objectruanganfk = :idRuangan
                 AND pp.produkfk NOT IN (402611)",
                 [
@@ -272,7 +269,7 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                 'kode_dokter' => (string)$data->iddokter,
                 'nama_dokter' => $data->namadokter,
                 'total_biaya' => $dataTotalBill[0]->total,
-                'total_pembayaran' => $dataTotaldibayar[0]->total,
+                'total_pembayaran' => $dataTotaldibayar[0]->total ?? 0,
                 'total_tagihan' => $dataTotalverif[0]->total,
                 'items' => $details
             ];
