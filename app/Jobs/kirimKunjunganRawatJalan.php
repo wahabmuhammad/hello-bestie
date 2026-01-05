@@ -95,9 +95,9 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                 ->leftjoin('strukbuktipenerimaan_t as sbm', 'sp.nosbmlastfk', '=', 'sbm.norec')
                 ->leftjoin('pegawai_m as pgsbm', 'pgsbm.id', '=', 'sbm.objectpegawaipenerimafk')
                 ->select(
-                    // 'pp.norec',
+                    'pp.norec',
                     'pp.tglpelayanan',
-                    'pp.rke',
+                    // 'pp.rke',
                     'pr.id as prid',
                     'pr.namaproduk',
                     'pp.jumlah',
@@ -115,7 +115,7 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                     'rusr.namaruangan as ruanganfarmasi',
                     'pgsr.namalengkap as penulisresep',
                     'pgdokter.namalengkap as namadokter_pp',
-                    'kpBpjs.kelompokprodukbpjs as kelompokprodukbpjs',
+                    // 'kpBpjs.kelompokprodukbpjs as kelompokprodukbpjs',
                     'kls.id as klsid',
                     'kls.namakelas',
                     'pp.jasa',
