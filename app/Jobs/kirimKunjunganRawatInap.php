@@ -52,6 +52,7 @@ class kirimKunjunganRawatInap implements ShouldQueue
                 'pasiendaftar_t.noregistrasi',
                 'pasien_m.nocm',
                 'pasien_m.namapasien',
+                'kelompokpasien_m.namaexternal as jenis_pembayaran',
                 'kelompokpasien_m.kelompokpasien',
                 'rekanan_m.namarekanan',
                 'pasiendaftar_t.tglregistrasi',
@@ -212,7 +213,7 @@ class kirimKunjunganRawatInap implements ShouldQueue
             }
             $payload = array();
             $payload = [
-                'jenis_pembayaran' => $data->kelompokpasien,
+                'jenis_pembayaran' => $data->jenis_pembayaran,
                 'kode_dokter' => (string)$data->iddokter,
                 'kode_kelas' => (string)$data->idkelas,
                 'kode_ruangan' => (string)$data->idruangan,
@@ -232,7 +233,7 @@ class kirimKunjunganRawatInap implements ShouldQueue
                 'total_tagihan' => $total_tagihan,
                 'items' => $details
             ];
-            dispatch(new kirimToBod($payload))
+            dispatch(new KirimToBodRanap($payload))
                 ->delay(now()->addSeconds($delay));
 
             $delay += 2;
