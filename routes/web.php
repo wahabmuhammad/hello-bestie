@@ -29,6 +29,7 @@ Route::get('/daftar-kunjungan-ranap', [indexKunjunganController::class, 'indexKu
 Route::post('/daftar-kunjungan-ranap/send-data', [indexKunjunganController::class, 'sendDataKunjunganRanap'])->name('sendDataKunjunganRanap');
 Route::get('/daftar-kunjungan-penunjang', [indexKunjunganController::class, 'indexKunjunganPenunjang'])->name('indexKunjunganPenunjang');
 Route::post('/daftar-kunjungan-penunjang/send-data', [indexKunjunganController::class, 'sendDataKunjunganPenunjang'])->name('sendDataKunjunganPenunjang');
+Route::get('/daftar-kunjungan-ranap/send-data/{noreg}/{idRuangan}', [indexKunjunganController::class, 'sendDataKunjunganRanapByNoreg'])->name('sendDataKunjunganRanapByNoreg');
 
 Route::post('/kontrol/send-notification/batal-kontrol', [kontrolController::class, 'notifikasiBatalPraktik'])->name('notifikasiBatalPraktik');
 Route::post('/kontrol/send-notification/rubah-jadwal', [kontrolController::class, 'rubahJadwal'])->name('rubahJadwal');
