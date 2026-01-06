@@ -144,7 +144,9 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                 ->where('pd.noregistrasi', '=', $noregistrasi)
                 ->get();
             if (count($pelayanan) > 0) {
-
+                $total_biaya = 0;
+                $total_tagihan = 0;
+                $total_pembayaran = 0;
                 foreach ($pelayanan as $item) {
                     $NamaDokter = '-';
                     $kodeDokter = '';
@@ -154,9 +156,19 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                             $kodeDokter = $hahaha->iddokter;
                         }
                     }
-
+                    
                     $harga = (float)$item->hargajual;
                     $diskon = (float)$item->hargadiscount;
+
+                    $harga = (float) $item->hargajual;
+                    $qty   = (float) $item->jumlah;
+
+                    $subtotal = $harga * $qty;
+
+                    $total_biaya += $subtotal;
+                    $total_tagihan += $subtotal;
+                    $total_pembayaran += $subtotal;
+
                     $detail = [
                         'kode_tindakan' => (string)$item->prid,
                         'nama_tindakan' => $item->namaproduk,
@@ -193,37 +205,37 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                     $details[] = $detail;
                 }
             }
-            $totals = DB::selectOne("
-                SELECT
-                    SUM(
-                        (COALESCE(pp.hargajual,0) * COALESCE(pp.jumlah,0))
-                        + COALESCE(pp.jasa,0)
-                    ) AS total_biaya,
+            // $totals = DB::selectOne("
+            //     SELECT
+            //         SUM(
+            //             (COALESCE(pp.hargajual,0) * COALESCE(pp.jumlah,0))
+            //             + COALESCE(pp.jasa,0)
+            //         ) AS total_biaya,
 
-                    SUM(
-                        (COALESCE(pp.hargajual,0) * COALESCE(pp.jumlah,0))
-                        + COALESCE(pp.jasa,0)
-                    ) FILTER (WHERE sp.nosbmlastfk IS NOT NULL) AS total_pembayaran,
+            //         SUM(
+            //             (COALESCE(pp.hargajual,0) * COALESCE(pp.jumlah,0))
+            //             + COALESCE(pp.jasa,0)
+            //         ) FILTER (WHERE sp.nosbmlastfk IS NOT NULL) AS total_pembayaran,
 
-                    SUM(
-                        (COALESCE(pp.hargajual,0) * COALESCE(pp.jumlah,0))
-                        + COALESCE(pp.jasa,0)
-                    ) FILTER (WHERE pp.strukfk IS NOT NULL) AS total_tagihan
+            //         SUM(
+            //             (COALESCE(pp.hargajual,0) * COALESCE(pp.jumlah,0))
+            //             + COALESCE(pp.jasa,0)
+            //         ) FILTER (WHERE pp.strukfk IS NOT NULL) AS total_tagihan
 
-                FROM pasiendaftar_t pd
-                JOIN antrianpasiendiperiksa_t apd
-                    ON apd.noregistrasifk = pd.norec
-                JOIN pelayananpasien_t pp
-                    ON pp.noregistrasifk = apd.norec
-                LEFT JOIN strukpelayanan_t sp
-                    ON sp.norec = pp.strukfk
-                WHERE pd.noregistrasi = :noregistrasi
-                AND apd.objectruanganfk = :idRuangan
-                AND pp.produkfk NOT IN (402611)
-            ", [
-                'noregistrasi' => $noregistrasi,
-                'idRuangan' => $idRuangan
-            ]);
+            //     FROM pasiendaftar_t pd
+            //     JOIN antrianpasiendiperiksa_t apd
+            //         ON apd.noregistrasifk = pd.norec
+            //     JOIN pelayananpasien_t pp
+            //         ON pp.noregistrasifk = apd.norec
+            //     LEFT JOIN strukpelayanan_t sp
+            //         ON sp.norec = pp.strukfk
+            //     WHERE pd.noregistrasi = :noregistrasi
+            //     AND apd.objectruanganfk = :idRuangan
+            //     AND pp.produkfk NOT IN (402611)
+            // ", [
+            //     'noregistrasi' => $noregistrasi,
+            //     'idRuangan' => $idRuangan
+            // ]);
 
             $payload = array();
             $payload = [
@@ -238,9 +250,9 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                 'nama_layanan' => $data->namaruangan,
                 'kode_dokter' => (string)$data->iddokter,
                 'nama_dokter' => $data->namadokter,
-                'total_biaya'       => (float) ($totals->total_biaya ?? 0),
-                'total_pembayaran' => (float) ($totals->total_pembayaran ?? 0),
-                'total_tagihan'    => (float) ($totals->total_tagihan ?? 0),
+                'total_biaya'       => (float) $total_biaya,
+                'total_pembayaran' => (float) $total_pembayaran,
+                'total_tagihan'    => (float) $total_tagihan,
                 'items' => $details
             ];
             // dd($payload);
