@@ -152,6 +152,14 @@ class kirimKunjunganRawatInap implements ShouldQueue
                 $total_tagihan = 0;
                 $total_pembayaran = 0;
                 foreach ($pelayanan as $item) {
+                    if (
+                        empty($item->prid) ||
+                        empty($item->namaproduk) ||
+                        empty($item->jumlah) ||
+                        $item->jumlah <= 0
+                    ) {
+                        continue;
+                    }
                     $NamaDokter = '-';
                     $kodeDokter = '';
                     foreach ($pelayananpetugas as $hahaha) {
