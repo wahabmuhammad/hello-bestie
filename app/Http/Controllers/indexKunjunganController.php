@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\kirimKunjunganPenunjang;
 use App\Jobs\kirimKunjunganRawatInap;
 use App\Jobs\kirimKunjunganRawatJalan;
 use App\services\bodService;
@@ -188,7 +189,12 @@ class indexKunjunganController extends Controller
 
     public function sendDataKunjunganPenunjang(Request $request)
     {
-        //
+        $tglAwal = $request->input('tglAwal');
+        $tglAkhir = $request->input('tglAkhir');
+
+        dispatch(new kirimKunjunganPenunjang($tglAwal, $tglAkhir));
+
+        return response()->json(['status' => 'success', 'message' => 'Data kunjungan rawat inap berhasil diproses.']);
     }
 
     public function sendDataKunjunganRanapByNoreg(Request $request, $noreg, $idRuangan)

@@ -28,11 +28,12 @@ class kirimKunjunganPenunjang implements ShouldQueue
      */
     public function handle(): void
     {
+
         $tglAwal = $this->tglAwal;
         $tglAkhir = $this->tglAkhir;
-
         $datas = DB::table('pasiendaftar_t')
             ->leftJoin('antrianpasiendiperiksa_t', 'pasiendaftar_t.norec', '=', 'antrianpasiendiperiksa_t.noregistrasifk')
+            ->leftJoin('kelas_m as kls', 'antrianpasiendiperiksa_t.objectkelasfk', '=', 'kls.id')
             ->leftJoin('pasien_m', 'pasiendaftar_t.nocmfk', '=', 'pasien_m.id')
             ->leftJoin('ruangan_m', 'antrianpasiendiperiksa_t.objectruanganfk', '=', 'ruangan_m.id')
             ->leftJoin('departemen_m', 'ruangan_m.objectdepartemenfk', '=', 'departemen_m.id')
@@ -40,8 +41,7 @@ class kirimKunjunganPenunjang implements ShouldQueue
             ->leftJoin('pegawai_m', 'pasiendaftar_t.objectpegawaifk', '=', 'pegawai_m.id')
             ->leftJoin('rekanan_m', 'pasiendaftar_t.objectrekananfk', '=', 'rekanan_m.id')
             ->where('pasiendaftar_t.statusenabled', true)
-            // ->where('departemen_m.id', '=', '18') // ambil data rawat jalan id departemen 18
-            ->whereIn('departemen_m.id', ['27','3','24']) // ambil data penunjang id departemen IGD, Laborat, Radiologi
+            ->whereIn('departemen_m.id', ['27', '3', '24']) // ambil data rawat jalan id departemen 18
             ->when($tglAwal && $tglAkhir, function ($query) use ($tglAwal, $tglAkhir) {
                 $query->whereBetween('pasiendaftar_t.tglregistrasi', [
                     $tglAwal . ' 00:00:00',
@@ -53,6 +53,7 @@ class kirimKunjunganPenunjang implements ShouldQueue
                 'pasiendaftar_t.noregistrasi',
                 'pasien_m.nocm',
                 'pasien_m.namapasien',
+                'kelompokpasien_m.namaexternal as jenis_pembayaran',
                 'kelompokpasien_m.kelompokpasien',
                 'rekanan_m.namarekanan',
                 'pasiendaftar_t.tglregistrasi',
@@ -64,6 +65,8 @@ class kirimKunjunganPenunjang implements ShouldQueue
                 'pasiendaftar_t.norec as norec_pd',
                 'antrianpasiendiperiksa_t.norec as norec_apd',
                 'ruangan_m.id as idruangan',
+                'antrianpasiendiperiksa_t.objectkelasfk as idkelas',
+                'kls.namakelas',
                 // 'pegawai_m.namalengkap as namadokter',
                 // 'ruangan_m.namaruangan',
                 // 'kelompokpasien_m.kelompokpasien'
@@ -74,6 +77,7 @@ class kirimKunjunganPenunjang implements ShouldQueue
         foreach ($datas as $data) {
             $noregistrasi = $data->noregistrasi;
             $idRuangan = $data->idruangan;
+            $tanggal_pulang = $data->tglpulang;
 
             $pelayanan = DB::table('pasiendaftar_t as pd')
                 ->leftjoin('antrianpasiendiperiksa_t as apd', 'apd.noregistrasifk', '=', 'pd.norec')
@@ -95,7 +99,8 @@ class kirimKunjunganPenunjang implements ShouldQueue
                 ->select(
                     'pp.norec',
                     'pp.tglpelayanan',
-                    'pp.rke',
+                    // 'pp.rke',
+                    'ru.kodeeksternal',
                     'pr.id as prid',
                     'pr.namaproduk',
                     'pp.jumlah',
@@ -126,7 +131,7 @@ class kirimKunjunganPenunjang implements ShouldQueue
                     'pp.iscito',
                     'pp.isparamedis'
                 )
-                ->whereNull('pp.aturanpakai')
+                // ->whereNull('pp.aturanpakai')
                 ->where('pd.noregistrasi', '=', $noregistrasi)
                 ->where('apd.objectruanganfk', '=', $idRuangan)
                 ->orderBy('pp.tglpelayanan', 'asc')
@@ -143,7 +148,19 @@ class kirimKunjunganPenunjang implements ShouldQueue
                 ->get();
             if (count($pelayanan) > 0) {
                 $details = array();
+                // $details = array();
+                $total_biaya = 0;
+                $total_tagihan = 0;
+                $total_pembayaran = 0;
                 foreach ($pelayanan as $item) {
+                    if (
+                        empty($item->prid) ||
+                        empty($item->namaproduk) ||
+                        empty($item->jumlah) ||
+                        $item->jumlah <= 0
+                    ) {
+                        continue;
+                    }
                     $NamaDokter = '-';
                     $kodeDokter = '';
                     foreach ($pelayananpetugas as $hahaha) {
@@ -153,8 +170,17 @@ class kirimKunjunganPenunjang implements ShouldQueue
                         }
                     }
 
-                    $harga = (float)$item->hargajual;
-                    $diskon = (float)$item->hargadiscount;
+                    // $harga = (float)$item->hargajual;
+                    $tanggal_pulang = $data->tglpulang ? $data->tglpulang : date('Y-m-d H:i:s');
+                    $harga = (float) $item->hargajual;
+                    $qty   = (float) $item->jumlah;
+
+                    $subtotal = $harga * $qty;
+
+                    $total_biaya += $subtotal;
+                    $total_tagihan += $subtotal;
+                    $total_pembayaran += $subtotal;
+                    // $diskon = (float)$item->hargadiscount;
                     $detail = [
                         'kode_tindakan' => (string)$item->prid,
                         'nama_tindakan' => $item->namaproduk,
@@ -162,8 +188,11 @@ class kirimKunjunganPenunjang implements ShouldQueue
                         'qty_transaksi' => $item->jumlah,
                         'total_transaksi' => $item->hargajual * $item->jumlah,
                         'is_jasa' => $item->jasa > 0 ? true : false,
+                        'kode_layanan' => $item->kodeeksternal,
+                        'nama_layanan' => $item->namaruangan,
                         'kode_penerima' => (string)$kodeDokter,
                         'nama_penerima' => $NamaDokter,
+                        'tanggal_pulang' => $tanggal_pulang,
                         // 'norec_pp' => $item->norec,
                         // 'tglpelayanan' => $item->tglpelayanan,
                         // 'rke' => $item->rke,
@@ -191,83 +220,26 @@ class kirimKunjunganPenunjang implements ShouldQueue
                     $details[] = $detail;
                 }
             }
-            $dataTotalBill = DB::select(
-                "select sum(
-                            ((case when pp.hargajual is null then 0 else pp.hargajual end 
-                            - case when pp.hargadiscount is null then 0 else pp.hargadiscount end) 
-                            * pp.jumlah) 
-                            + case when pp.jasa is null then 0 else pp.jasa end
-                        ) as total
-                        from pasiendaftar_t as pd
-                        inner join antrianpasiendiperiksa_t as apd on apd.noregistrasifk = pd.norec
-                        inner join pelayananpasien_t as pp on pp.noregistrasifk = apd.norec
-                        where pd.noregistrasi = :noregistrasi
-                        and pp.aturanpakai is null
-                        and apd.objectruanganfk = :idRuangan
-                        and pp.produkfk not in (402611)",
-                [
-                    'noregistrasi' => $noregistrasi,
-                    'idRuangan' => $idRuangan
-                ]
-            );
-            $dataTotaldibayar = DB::select(
-                "select sum(
-                            ((case when pp.hargajual is null then 0 else pp.hargajual end 
-                            - case when pp.hargadiscount is null then 0 else pp.hargadiscount end) 
-                            * pp.jumlah) 
-                            + case when pp.jasa is null then 0 else pp.jasa end
-                        ) as total
-                        from pasiendaftar_t as pd
-                        inner join antrianpasiendiperiksa_t as apd on apd.noregistrasifk = pd.norec
-                        inner join pelayananpasien_t as pp on pp.noregistrasifk = apd.norec
-                        inner join strukpelayanan_t as sp on sp.norec = pp.strukfk
-                        where pd.noregistrasi = :noregistrasi
-                        and sp.nosbmlastfk is not null
-                        and pp.aturanpakai is null
-                        and apd.objectruanganfk = :idRuangan
-                        and pp.produkfk not in (402611)",
-                [
-                    'noregistrasi' => $noregistrasi,
-                    'idRuangan' => $idRuangan
-                ]
-            );
-
-            $dataTotalverif = DB::select(
-                "select sum(
-                            ((case when pp.hargajual is null then 0 else pp.hargajual end 
-                            - case when pp.hargadiscount is null then 0 else pp.hargadiscount end) 
-                            * pp.jumlah) 
-                            + case when pp.jasa is null then 0 else pp.jasa end
-                        ) as total
-                        from pasiendaftar_t as pd
-                        inner join antrianpasiendiperiksa_t as apd on apd.noregistrasifk = pd.norec
-                        inner join pelayananpasien_t as pp on pp.noregistrasifk = apd.norec
-                        where pd.noregistrasi = :noregistrasi
-                        and pp.strukfk is not null
-                        and pp.aturanpakai is null
-                        and apd.objectruanganfk = :idRuangan
-                        and pp.produkfk not in (402611)",
-                [
-                    'noregistrasi' => $noregistrasi,
-                    'idRuangan' => $idRuangan
-                ]
-            );
             $payload = array();
             $payload = [
-                'nomor_transaksi' => $noregistrasi,
-                'nomor_rekam_medis' => $data->nocm,
-                'nama_pasien' => $data->namapasien,
-                'jenis_pembayaran' => $data->kelompokpasien,
-                'nama_penjamin' => $data->namarekanan,
-                'tanggal_pelayanan' => $data->tglregistrasi,
-                'tanggal_pulang' => $data->tglpulang,
-                'kode_layanan' => $data->kodeeksternal,
-                'nama_layanan' => $data->namaruangan,
+                'jenis_pembayaran' => $data->jenis_pembayaran,
                 'kode_dokter' => (string)$data->iddokter,
-                'nama_dokter' => $NamaDokter,
-                'total_biaya' => $dataTotalBill[0]->total,
-                'total_pembayaran' => $dataTotaldibayar[0]->total,
-                'total_tagihan' => $dataTotalverif[0]->total,
+                'kode_kelas' => (string)$data->idkelas,
+                'kode_ruangan' => (string)$data->idruangan,
+                'nama_dokter' => $data->namadokter,
+                'nama_kelas' => $data->namakelas,
+                'nama_pasien' => $data->namapasien,
+                'nama_penjamin' => $data->namarekanan,
+                'nama_ruangan' => $data->namaruangan,
+                'nomor_rekam_medis' => $data->nocm,
+                'nomor_transaksi' => $noregistrasi,
+                'tanggal_masuk' => $data->tglregistrasi,
+                'tanggal_pulang' => $data->tglpulang,
+                // 'kode_layanan' => $data->kodeeksternal,
+                // 'nama_layanan' => $data->namaruangan,
+                'total_biaya' => $total_biaya,
+                'total_pembayaran' => $total_pembayaran,
+                'total_tagihan' => $total_tagihan,
                 'items' => $details
             ];
             dispatch(new kirimToBod($payload))
@@ -275,7 +247,7 @@ class kirimKunjunganPenunjang implements ShouldQueue
 
             $delay += 2;
 
-            Log::info('Payload kirimKunjunganPenunjang', $payload);
+            Log::info('Payload kirimKunjunganRawatInap', $payload);
         }
     }
 }
