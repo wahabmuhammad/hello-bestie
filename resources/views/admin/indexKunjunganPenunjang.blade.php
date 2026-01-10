@@ -296,7 +296,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: 'daftar-kunjungan/send-data',
+                            url: 'daftar-kunjungan-penunjang/send-data',
                             type: 'post',
                             data: {
                                 tglAwal: $('#tglAwal').val(),
