@@ -213,7 +213,7 @@
                     success: function(response) {
                         console.log(response); // cek data response dari server
                         let rows = '';
-                        const startIndex = (page - 1) * 10;
+                        const startIndex = (page - 1) * 25;
 
                         $.each(response.datas, function(index, data) {
                             const rowNumber = startIndex + index + 1;
