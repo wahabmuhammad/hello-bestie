@@ -20,27 +20,26 @@ class indexKunjunganController extends Controller
         $idDokter = $request->input('iddokter');
 
         $pasiendaftar = DB::table('pasiendaftar_t')
-            ->leftJoin('antrianpasiendiperiksa_t', 'pasiendaftar_t.norec', '=', 'antrianpasiendiperiksa_t.noregistrasifk')
+            // ->leftJoin('antrianpasiendiperiksa_t', 'pasiendaftar_t.norec', '=', 'antrianpasiendiperiksa_t.noregistrasifk')
             ->leftJoin('pasien_m', 'pasiendaftar_t.nocmfk', '=', 'pasien_m.id')
-            ->leftJoin('ruangan_m', 'antrianpasiendiperiksa_t.objectruanganfk', '=', 'ruangan_m.id')
+            ->leftJoin('ruangan_m', 'pasiendaftar_t.objectruanganlastfk', '=', 'ruangan_m.id')
             ->leftJoin('departemen_m', 'ruangan_m.objectdepartemenfk', '=', 'departemen_m.id')
             ->leftJoin('kelompokpasien_m', 'pasiendaftar_t.objectkelompokpasienlastfk', '=', 'kelompokpasien_m.id')
             ->leftJoin('pegawai_m', 'pasiendaftar_t.objectpegawaifk', '=', 'pegawai_m.id')
             ->where('pasiendaftar_t.statusenabled', true)
             // ->where('pasiendaftar_t.objectkelompokpasienlastfk', '!=', 2)
-            // ->whereIn('departemen_m.id', ['18','3','24']) // ambil data rawat jalan id departemen 18
-            ->where('departemen_m.id', '=', '18') // ambil data rawat jalan id departemen 18
+            ->whereIn('departemen_m.id', ['18','3','24','27']) // ambil data rawat jalan id departemen 18
+            // ->where('departemen_m.id', '=', '18') // ambil data rawat jalan id departemen 18
             ->when($tglAwal && $tglAkhir, function ($query) use ($tglAwal, $tglAkhir) {
                 $query->whereBetween('pasiendaftar_t.tglregistrasi', [
                     $tglAwal . ' 00:00:00',
                     $tglAkhir . ' 23:59:59'
                 ]);
             })
-            ->distinct()
             ->select(
                 'pasiendaftar_t.norec as norec_pd',
                 'pasiendaftar_t.noregistrasi',
-                'antrianpasiendiperiksa_t.norec as norec_apd',
+                // 'antrianpasiendiperiksa_t.norec as norec_apd',
                 'pasien_m.nocm',
                 'pasien_m.namapasien',
                 'pasiendaftar_t.tglregistrasi',

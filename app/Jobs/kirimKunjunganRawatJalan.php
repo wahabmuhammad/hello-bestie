@@ -33,23 +33,24 @@ class kirimKunjunganRawatJalan implements ShouldQueue
         $tglAwal = $this->tglAwal;
         $tglAkhir = $this->tglAkhir;
         $datas = DB::table('pasiendaftar_t')
-            ->leftJoin('antrianpasiendiperiksa_t', 'pasiendaftar_t.norec', '=', 'antrianpasiendiperiksa_t.noregistrasifk')
+            // ->leftJoin('antrianpasiendiperiksa_t', 'pasiendaftar_t.norec', '=', 'antrianpasiendiperiksa_t.noregistrasifk')
             ->leftJoin('pasien_m', 'pasiendaftar_t.nocmfk', '=', 'pasien_m.id')
-            ->leftJoin('ruangan_m', 'antrianpasiendiperiksa_t.objectruanganfk', '=', 'ruangan_m.id')
+            ->leftJoin('ruangan_m', 'pasiendaftar_t.objectruanganlastfk', '=', 'ruangan_m.id')
             ->leftJoin('departemen_m', 'ruangan_m.objectdepartemenfk', '=', 'departemen_m.id')
             ->leftJoin('kelompokpasien_m', 'pasiendaftar_t.objectkelompokpasienlastfk', '=', 'kelompokpasien_m.id')
             ->leftJoin('pegawai_m', 'pasiendaftar_t.objectpegawaifk', '=', 'pegawai_m.id')
             ->leftJoin('rekanan_m', 'pasiendaftar_t.objectrekananfk', '=', 'rekanan_m.id')
             ->where('pasiendaftar_t.statusenabled', true)
             // ->where('pasiendaftar_t.objectkelompokpasienlastfk', '!=', 2)
-            ->where('departemen_m.id', '=', '18') // ambil data rawat jalan id departemen 18
+            // ->where('departemen_m.id', '=', '18') // ambil data rawat jalan id departemen 18
+            ->whereIn('departemen_m.id', ['18','3','24','27'])
             ->when($tglAwal && $tglAkhir, function ($query) use ($tglAwal, $tglAkhir) {
                 $query->whereBetween('pasiendaftar_t.tglregistrasi', [
                     $tglAwal . ' 00:00:00',
                     $tglAkhir . ' 23:59:59'
                 ]);
             })
-            ->distinct()
+            // ->distinct()
             ->select(
                 'pasiendaftar_t.noregistrasi',
                 'pasien_m.nocm',
@@ -64,7 +65,7 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                 'pegawai_m.id as iddokter',
                 'pegawai_m.namalengkap as namadokter',
                 'pasiendaftar_t.norec as norec_pd',
-                'antrianpasiendiperiksa_t.norec as norec_apd',
+                // 'antrianpasiendiperiksa_t.norec as norec_apd',
                 'ruangan_m.id as idruangan',
                 // 'pegawai_m.namalengkap as namadokter',
                 // 'ruangan_m.namaruangan',
@@ -130,7 +131,7 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                 )
                 // ->whereNull('pp.aturanpakai')
                 ->where('pd.noregistrasi', '=', $noregistrasi)
-                ->where('apd.objectruanganfk', '=', $idRuangan)
+                // ->where('apd.objectruanganfk', '=', $idRuangan)
                 ->orderBy('pp.tglpelayanan', 'asc')
                 ->orderBy('pp.rke', 'asc')
                 ->get();
@@ -156,12 +157,14 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                     ) {
                         continue;
                     }
+                    $jasa = false;
                     $NamaDokter = '-';
                     $kodeDokter = '';
                     foreach ($pelayananpetugas as $hahaha) {
                         if ($hahaha->pelayananpasien == $item->norec) {
                             $NamaDokter = $hahaha->namalengkap;
                             $kodeDokter = $hahaha->iddokter;
+                            $jasa = true;
                         }
                     }
                     
@@ -183,7 +186,7 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                         'harga_satuan' => $harga,
                         'qty_transaksi' => $item->jumlah,
                         'total_transaksi' => $item->hargajual * $item->jumlah,
-                        'is_jasa' => $item->jasa > 0 ? true : false,
+                        'is_jasa' => $jasa,
                         'kode_penerima' => (string)$kodeDokter,
                         'nama_penerima' => $NamaDokter,
                         // 'norec_pp' => $item->norec,
@@ -247,7 +250,7 @@ class kirimKunjunganRawatJalan implements ShouldQueue
 
             $payload = array();
             $payload = [
-                'nomor_transaksi' => $noregistrasi . '~' . $data->kodeeksternal,
+                'nomor_transaksi' => $noregistrasi,
                 'nomor_rekam_medis' => $data->nocm,
                 'nama_pasien' => $data->namapasien,
                 'jenis_pembayaran' => $data->jenis_pembayaran,
