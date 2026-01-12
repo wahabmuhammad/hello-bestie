@@ -164,7 +164,7 @@ class kirimKunjunganRawatJalan implements ShouldQueue
                         if ($hahaha->pelayananpasien == $item->norec) {
                             $NamaDokter = $hahaha->namalengkap;
                             $kodeDokter = $hahaha->iddokter;
-                            if($NamaDokter != '-' || $kodeDokter != null){
+                            if($NamaDokter != '-' && $kodeDokter != null){
                                 $jasa = true;
                             }
                             
